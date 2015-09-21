@@ -3,13 +3,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
-
-import jbfunctions.TF;
 
 public class TyphoonPlot {
 
@@ -69,7 +66,7 @@ public class TyphoonPlot {
 	}
 	
 	public static void write_output(String file_name, int[][] v_plot,
-			int x_axis_window, int y_axis_high_frag, int plot_width, TF t
+			int x_axis_window, int y_axis_high_frag, int plot_width
 			) throws IOException{
 		
 		// Setup the output buffer
@@ -99,38 +96,17 @@ public class TyphoonPlot {
 			output.write(f + sep);
 			
 			
-			// if(t.getStrand() == '+'){
-				
-				// Iterate through each relative position on that fragment length
-				for(int p = 0; p < plot_width; p++){
+			// Iterate through each relative position on that fragment length
+			for(int p = 0; p < plot_width; p++){
 					
-					// Update the sep at the end of the line
-					if(p == (plot_width - 1)){sep = "\n";}
+			// Update the sep at the end of the line
+			if(p == (plot_width - 1)){sep = "\n";}
 					
-					// Write out the matrix
-					output.write(v_plot[f][p] + sep);
-				
-				}
-			
-			/*	
-				
-			}else{
-				
-				// Iterate through each relative position on that fragment length
-				for(int p = plot_width - 1; p >= 0; p--){
-					
-					// Update the sep at the end of the line
-					if(p == 0){sep = "\n";}
-					
-					// Write out the matrix
-					output.write(v_plot[f][p] + sep);
-				
-				}
+				// Write out the matrix
+				output.write(v_plot[f][p] + sep);
 				
 			}
-		
-			*/		
-					
+	
 		}
 		
 		// Close the output buffer
@@ -141,78 +117,60 @@ public class TyphoonPlot {
 	
 	public static void main(String[] args) throws IOException {
 
-		// Get the parameters
-		String bam_file_dir = 
-			"c:/Users/Jason/Documents/macalpine_lab/bam_files/";
-						
-		String feature_file_name = 		
-			"L:/datasets/oridb_acs_feature_file_curated_829_sites.csv";
-					
-		String bam_file_id = "dm242";
-		
-		String bam_file_type = "wt";
-		
-		String output_file_dir = 
-			"L:/datasets/dmmt_oridb_typhoon_plot_mat/";
-		
-		int x_axis_window = 1000;
-		int y_axis_high_frag = 250;		
-				
-		// Set the output file header
-		String output_file_footer = "_typhoon_plot_" + bam_file_type + "_" + bam_file_id + "_win_" + x_axis_window + 
-									"_high_frag_" + y_axis_high_frag + ".csv";
-				
 		// Set the bam file name
-		String bam_file_name = bam_file_dir + bam_file_id + ".bam";
+		String bam_file_name = args[0];
+		
+		// Make the output file name
+		String output_file_name = args[1];	
+						
+		// Set the feature file name
+		String chr = args[2];
+		
+		// Set the position
+		int pos = Integer.parseInt(args[3]);
 				
+		// Set the x-axis window
+		int x_axis_window = Integer.parseInt(args[4]);
+		
+		// Set the y-limit threshold
+		int y_axis_high_frag = Integer.parseInt(args[5]);
+				
+		//////////////////////////////////////////////////////////////////////////
+		
+		
+		
+		
 		// Set the plot_width variable
 		int plot_width = 2 * x_axis_window + 1;
-		
-		// Read in the ACS positions into the list
-		ArrayList<TF> feature_list = TF.read_in_tf_list(feature_file_name);
-		
+				
 		// Get the bam file
 		SAMFileReader bam_file = new SAMFileReader(new File(bam_file_name), new File(bam_file_name + ".bai"));
 				
-		// Iterate through each feature
-		for(int a = 0; a < 21; a++){
+		// Create a new storage matrix		
+		int[][] typhoon_plot = new int[y_axis_high_frag + 1][plot_width];
 				
-			// Create a new storage matrix		
-			int[][] typhoon_plot = new int[y_axis_high_frag + 1][plot_width];
-				
-			// Get the current feature object
-			TF cur_feature = feature_list.get(a);
-					
-			// Obtain the feature midpoint position
-			int pos = cur_feature.getPos();
-						
-			// Set the lower and upper boundary thresholds
-			int low_pos_boundary = (pos - x_axis_window);
-			int high_pos_boundary = (pos + x_axis_window);
-					
-			// Get the SAM Record Iterator over that particular region
-			SAMRecordIterator bam_itr = 
-					bam_file.queryOverlapping(
-						cur_feature.getChr(), 
+		// Set the lower and upper boundary thresholds
+		int low_pos_boundary = (pos - x_axis_window);
+		int high_pos_boundary = (pos + x_axis_window);
+
+		// Get the SAM Record Iterator over that particular region
+		SAMRecordIterator bam_itr = 
+				bam_file.queryOverlapping(
+						chr, 
 						Math.max(1, pos - x_axis_window),
 						pos + x_axis_window
 						);
-														   
-			// Iterate through each read within this range											   
-			update_typhoon_plot_matrix(bam_itr, typhoon_plot, 
-					y_axis_high_frag, low_pos_boundary, high_pos_boundary, plot_width
-					);
-			
-			// Make the output file name
-			String output_file_name = output_file_dir + cur_feature.getName() + output_file_footer;
-						
-			// Write the output
-			write_output(output_file_name, typhoon_plot, 
-					x_axis_window, y_axis_high_frag, plot_width, cur_feature
-					);
-			
-		}
-		
+
+		// Iterate through each read within this range											   
+		update_typhoon_plot_matrix(bam_itr, typhoon_plot, 
+				y_axis_high_frag, low_pos_boundary, high_pos_boundary, plot_width
+				);
+
+		// Write the output
+		write_output(output_file_name, typhoon_plot, 
+				x_axis_window, y_axis_high_frag, plot_width
+				);
+				
 		// Close the SAM File Reader
 		bam_file.close();
 	
