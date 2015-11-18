@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
-import jbfunctions.TF;
+import genomics_functions.TF;
 
 public class VPlot {
 

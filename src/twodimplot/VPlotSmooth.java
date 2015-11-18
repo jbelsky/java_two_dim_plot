@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
-import jbfunctions.DensityEst;
+import genomics_functions.DensityEst;
 
 
 public class VPlotSmooth {
