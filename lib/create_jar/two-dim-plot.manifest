@@ -1,0 +1,2 @@
+Class-Path: /data/java-library/sam-1.67.jar /data/java-library/genomics-functions.jar
+Main-Class: twodimplot/CMDLineMain
